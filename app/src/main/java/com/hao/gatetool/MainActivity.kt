@@ -10,7 +10,6 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.coroutineScope
-import com.hao.gatetool.net.AddressListener
 import com.hao.gatetool.net.Constants
 import com.hao.gatetool.net.UDPReceiver
 import com.hao.gatetool.net.UDPSender
@@ -95,11 +94,8 @@ class MainActivity : AppCompatActivity() {
                             TTSUtils.getInstance().speak("禁止通行")
                         }
                     }
-
-
                 }
             }
-
         } catch (e: Exception) {
             Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
             Log.d("Main", "onCreate: " + e.message)
