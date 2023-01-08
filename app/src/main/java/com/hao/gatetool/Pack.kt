@@ -6,14 +6,14 @@ package com.hao.gatetool
  *  验票\开闸\过闸\
  */
 object Pack {
-    fun qrMsg(qrcode: String): String {
-        return "\$F384605470533333459544638111/@${qrcode}\\@\$E"
+    //验票
+    fun qrMsg(qrcode: String, sn: String = "284605470533333459544638"): String {
+        return "\$F${sn}111/@${qrcode}\\@\$E"
     }
 
-    fun passedMsg(): String {
-        return "open gate passed"
+    //过闸
+    fun passedMsg(sn: String = "284605470533333459544638"): String {
+        return "\$F${sn}P21/@ok\\@\$E"
     }
-    fun openMsg():String{
-        return  "";
-    }
+
 }

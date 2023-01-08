@@ -1,5 +1,7 @@
 package com.hao.gatetool
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -14,8 +16,14 @@ import com.hao.gatetool.net.UDPReceiver
 import com.hao.gatetool.net.UDPSender
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
+    private val key_number = "number"
+    private val key_address = "address"
+    private val key_ticket = "ticket"
+    private val key_auto = "auto"
+
     lateinit var edSerUDPAddress: EditText
     lateinit var tvLocalAddress: TextView
     lateinit var swAutoPassGate: Switch
@@ -26,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var tvReceiverCon: TextView
     lateinit var tvResult: TextView
     lateinit var tvError: TextView
+    lateinit var tvNumber: TextView
+    lateinit var sharedPref: SharedPreferences
 
     var auto: Boolean = false
     lateinit var udpReceiver: UDPReceiver
@@ -33,8 +43,10 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPref = getSharedPreferences("setting", Context.MODE_PRIVATE)
         TTSUtils.init(this) {
             Log.d("Main", "onCreate: TTS init")
         }
@@ -59,7 +71,8 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "未填内容", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
-                sendUdpMsg(Pack.qrMsg(ticket))
+                sendUdpMsg(Pack.qrMsg(ticket, getNumber()))
+                saveSetting()
             }
             btnSendGateOpen.setOnClickListener {
                 val gateOpenMsg = edOpenGate.text.toString()
@@ -67,15 +80,23 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "未填内容", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
-                sendUdpMsg(Pack.passedMsg())
+                sendUdpMsg(Pack.passedMsg(getNumber()))
             }
             udpReceiver.registerReceiverListener { message, ipAddress, port ->
                 runOnUiThread {
-                    TTSUtils.getInstance().speak(message)
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                     tvReceiverCon.text = "来信地址:${ipAddress}:${port}"
                     tvResult.text = "接受内容：${message}"
-                    if (auto)
-                        sendUdpMsg(Pack.passedMsg())
+                    if (auto) {
+                        if (message.contains("A", true)) {
+                            TTSUtils.getInstance().speak("请通行")
+                            sendUdpMsg(Pack.passedMsg(sn = getNumber()))
+                        } else {
+                            TTSUtils.getInstance().speak("禁止通行")
+                        }
+                    }
+
+
                 }
             }
 
@@ -85,6 +106,16 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
 
+    }
+
+    private fun saveSetting() {
+        with(sharedPref.edit()) {
+            putString(key_number, tvNumber.text.toString())
+            putString(key_address, edSerUDPAddress.text.toString())
+            putString(key_ticket, editTextTicket.text.toString())
+            putBoolean(key_auto, auto)
+            apply()
+        }
     }
 
     override fun onDestroy() {
@@ -104,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         ip: String = getIpPort()[0],
         port: Int = getIpPort()[1].toInt()
     ) {
-        lifecycle.coroutineScope.launch(Dispatchers.IO){
+        lifecycle.coroutineScope.launch(Dispatchers.IO) {
             udpSender.send(msg, ip, port)
         }
     }
@@ -120,6 +151,29 @@ class MainActivity : AppCompatActivity() {
         tvReceiverCon = findViewById(R.id.tvRequestContent)
         tvResult = findViewById(R.id.tvCheckRelust)
         tvError = findViewById(R.id.tvError)
+        tvNumber = findViewById(R.id.tvNumber)
+        tvNumber.text = "${tvNumber.text}${Random.nextInt(9999)}"
+        with(sharedPref) {
+            var number = getString(key_number, "null")
+            var address = getString(key_address, "null")
+            var ticket = getString(key_ticket, "null")
+            var _auto = getBoolean(key_auto, true)
+            if (number != "null")
+                tvNumber.text = number
+            if (address != "null")
+                edSerUDPAddress.setText(address)
+            if (ticket != "null")
+                editTextTicket.setText(ticket)
+            swAutoPassGate.isChecked = _auto
+            auto = _auto
+        }
+
+    }
+
+    private fun getNumber(): String {
+        val text = tvNumber.text
+        val number = text.substring(text.length - 4, text.length)
+        return "00000000000000000000${number}"
     }
 
     private fun getIpPort(): List<String> {

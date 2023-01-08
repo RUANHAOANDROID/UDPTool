@@ -60,7 +60,7 @@ public class UDPSender {
      * @return If the message was sent or not.
      */
     public boolean send(final String message, final String ip, final int port) {
-        Log.d(TAG, "Sent message: " + message + " to " + ip + ":" + port);
+        //Log.d(TAG, "Sent message: " + message + " to " + ip + ":" + port);
         if (connected) {
             try {
                 final InetAddress address = InetAddress.getByName(ip);
@@ -69,7 +69,7 @@ public class UDPSender {
 
                 final DatagramPacket packet = new DatagramPacket(encodedMsg, size, address, port);
                 udpSocket.send(packet);
-                Log.d(TAG, "Sent message: " + message + " to " + ip + ":" + port);
+                Log.d(TAG, "Sent message->:"+ ip + ":" + port+"\t"+ message );
                 return true;
             } catch (final IOException e) {
                 Log.d(TAG, "Could not send message: " + message, e);

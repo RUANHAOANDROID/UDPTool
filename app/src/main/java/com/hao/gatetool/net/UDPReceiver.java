@@ -50,6 +50,7 @@ public class UDPReceiver implements Runnable {
                 final String message = new String(packet.getData(), Constants.MESSAGE_CHARSET).trim();
 
                 if (listener != null) {
+                    Log.d(TAG, "messageArrived<-: " + ip + ":" + port +"\t"+ message );
                     listener.messageArrived(message, ip, port);
                 }
             }
