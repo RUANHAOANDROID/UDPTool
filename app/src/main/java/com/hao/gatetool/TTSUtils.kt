@@ -13,7 +13,7 @@ import java.util.*
  */
 class TTSUtils {
     companion object {
-        private lateinit var tts: TextToSpeech
+        private  var tts: TextToSpeech? =null;
         private var INSTANCE: TTSUtils? = null
 
         fun getInstance(): TTSUtils =
@@ -26,7 +26,7 @@ class TTSUtils {
                 context
             ) {
                 Log.d("TTS", "tts init")
-                tts.language = Locale.CHINESE
+                tts?.language = Locale.CHINESE
                 block()
             }
         }
@@ -44,12 +44,12 @@ class TTSUtils {
      * utteranceId：当前朗读文本的id
      */
     fun speak(text: String) {
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null)
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null)
     }
 
     fun stop() {
-        tts.stop()
-        tts.shutdown()
+        tts?.stop()
+        tts?.shutdown()
     }
 
     fun openSystemTTSSettings(ctx: Context) {

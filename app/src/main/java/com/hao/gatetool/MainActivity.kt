@@ -7,10 +7,13 @@ import android.widget.EditText
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.coroutineScope
 import com.hao.gatetool.net.AddressListener
 import com.hao.gatetool.net.Constants
 import com.hao.gatetool.net.UDPReceiver
 import com.hao.gatetool.net.UDPSender
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     lateinit var edSerUDPAddress: EditText
@@ -27,7 +30,9 @@ class MainActivity : AppCompatActivity() {
     var auto: Boolean = false
     lateinit var udpReceiver: UDPReceiver
     lateinit var udpSender: UDPSender
-
+    override fun onStart() {
+        super.onStart()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         TTSUtils.init(this) {
@@ -54,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "未填内容", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
-                sendUdpMsg(Pack.crtQrMsg(ticket))
+                sendUdpMsg(Pack.qrMsg(ticket))
             }
             btnSendGateOpen.setOnClickListener {
                 val gateOpenMsg = edOpenGate.text.toString()
@@ -62,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "未填内容", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
-                sendUdpMsg(Pack.crtPassedMsg())
+                sendUdpMsg(Pack.passedMsg())
             }
             udpReceiver.registerReceiverListener { message, ipAddress, port ->
                 runOnUiThread {
@@ -70,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                     tvReceiverCon.text = "来信地址:${ipAddress}:${port}"
                     tvResult.text = "接受内容：${message}"
                     if (auto)
-                        sendUdpMsg(Pack.crtPassedMsg())
+                        sendUdpMsg(Pack.passedMsg())
                 }
             }
 
@@ -99,7 +104,9 @@ class MainActivity : AppCompatActivity() {
         ip: String = getIpPort()[0],
         port: Int = getIpPort()[1].toInt()
     ) {
-        udpSender.send(msg, ip, port)
+        lifecycle.coroutineScope.launch(Dispatchers.IO){
+            udpSender.send(msg, ip, port)
+        }
     }
 
     private fun initView() {

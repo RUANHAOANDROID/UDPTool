@@ -14,7 +14,7 @@ public interface Constants {
     /**
      * UDP接收端口
      */
-    int NETWORK_UDP_PORT = 60000;
+    int NETWORK_UDP_PORT = 60066;
 
     /**
      * 用于发送的临时多播地址和接收数据包
